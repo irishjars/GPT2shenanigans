@@ -16,7 +16,7 @@ def create_api():
     api = tweepy.API(auth, wait_on_rate_limit=True, 
         wait_on_rate_limit_notify=True)
     try:
-        api.verify_credentials()
+        print(api.verify_credentials())
     except Exception as e:
         logger.error("Error creating API", exc_info=True)
         raise e
@@ -24,11 +24,19 @@ def create_api():
     print("API created")
     return api
 
+def follow_followers(api):
+    logger.info("Retrieving and following followers")
+    for follower in tweepy.Cursor(api.followers).items():
+        if not follower.following:
+            logger.info(f"Following {follower.name}")
+            follower.follow()
+
 if __name__=="__main__":
+    api = create_api()
     with open("Gold_ViceInd_tweets.txt") as f:
-        api = create_api()
         for line in f:
             print(line)
+            follow_followers(api)
             api.update_status(line)
             time.sleep(302400)
 
